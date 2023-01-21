@@ -1,0 +1,737 @@
+              Resumen React
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Visualización de datos
+
+const user = {
+  name: 'Hedy Lamarr',
+  imageUrl: 'https://i.imgur.com/yXOvdOSs.jpg',
+  imageSize: 90
+  
+};
+
+export default function Profile() {
+  return (
+    <>
+      <h1>{user.name}</h1>
+      <img
+        className="avatar"
+        src={user.imageUrl}
+        alt={'Photo of ' + user.name}
+        style={user}
+      />
+    </>
+  );
+}
+......................................................................................
+Representación condicional
+
+let content;
+if (isLoggedIn) {
+  content = <AdminPanel />;
+} else {
+  content = <LoginForm />;
+}
+return (
+  <div>
+    {content}
+  </div>
+);
+
+Si prefiere un código más compacto, puede usar el operador condicional . ?
+A diferencia ifde , funciona dentro de JSX:
+
+<div>
+  {isLoggedIn ? (
+    <AdminPanel />
+  ) : (
+    <LoginForm />
+  )}
+</div>
+
+Cuando no necesite la elserama, también puede usar una sintaxis lógica&& más corta :
+
+<div>
+  {isLoggedIn && <AdminPanel />}
+</div>
+
+....................................................................................................
+
+Listas de renderizado
+
+
+const products = [
+  { title: 'Cabbage', id: 1 },
+  { title: 'Garlic', id: 2 },
+  { title: 'Apple', id: 3 },
+];
+
+const listItems = products.map(product =>
+  <li key={product.id}>
+    {product.title}
+  </li>
+);
+
+return (
+  <ul>{listItems}</ul>
+);
+
+
+
+import { people } from './data.js';
+import { getImageUrl } from './utils.js';
+
+export default function List() {
+  const chemists = people.filter(person =>
+    person.profession === 'chemist'
+  );
+  const listItems = chemists.map(person =>
+    <li>
+      <img
+        src={getImageUrl(person)}
+        alt={person.name}
+      />
+      <p>
+        <b>{person.name}:</b>
+        {' ' + person.profession + ' '}
+        known for {person.accomplishment}
+      </p>
+    </li>
+  );
+  return <ul>{listItems}</ul>;
+}
+
+.......................................................................................................
+Respondiendo a eventos
+
+function MyButton() {
+  function handleClick() {
+    alert('You clicked me!');
+  }
+
+  return (
+    <button onClick={handleClick}>
+      Click me
+    </button>
+  );
+}
+.......................................................................................................
+Actualizando la pantalla
+
+import { useState } from 'react';
+Ahora puede declarar una variable de estado dentro de su componente:
+
+function MyButton() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
+  return (
+    <button onClick={handleClick}>
+      Clicked {count} times
+    </button>
+  );
+}
+
+......................................................................................................
+Compartir datos entre componentes
+
+import { useState } from 'react';
+
+export default function MyApp() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
+  return (
+    <div>
+      <h1>Counters that update together</h1>
+      <MyButton count={count} onClick={handleClick} />
+      <MyButton count={count} onClick={handleClick} />
+    </div>
+  );
+}
+
+function MyButton({ count, onClick }) {
+  return (
+    <button onClick={onClick}>
+      Clicked {count} times
+    </button>
+  );
+}
+......................................................................................................
+
+Mantener los componentes puros
+
+En informática (y especialmente en el mundo de la programación funcional), una función pura es una función con las siguientes características:
+
+1.) Se ocupa de sus propios asuntos. No cambia ningún objeto o variable que existiera antes de que se llamara.
+...........ejemplo..............
+
+let guest = 0;
+
+function Cup() {
+  // Bad: changing a preexisting variable!
+  guest = guest + 1;
+  return <h2>Tea cup for guest #{guest}</h2>;
+}
+
+export default function TeaSet() {
+  return (
+    <>
+      <Cup />
+      <Cup />
+      <Cup />
+    </>
+  );
+}
+2.) Mismas entradas, misma salida. Dadas las mismas entradas, una función pura siempre debería devolver el mismo resultado.
+
+...........ejemplo..............
+
+function Cup({ guest }) {
+  return <h2>Tea cup for guest #{guest}</h2>;
+}
+
+export default function TeaSet() {
+  return (
+    <>
+      <Cup guest={1} />
+      <Cup guest={2} />
+      <Cup guest={3} />
+    </>
+  );
+}
+.......................................................................................................
+Agregar interactividad
+
+Algunas cosas en la pantalla se actualizan en respuesta a la entrada del usuario. Por ejemplo, hacer clic en una galería de imágenes cambia la imagen activa. En React, los datos que cambian con el tiempo se denominan estado. Puede agregar estado a cualquier componente y actualizarlo según sea necesario. En este capítulo, aprenderá a escribir componentes que manejen interacciones, actualicen su estado y muestren resultados diferentes a lo largo del tiempo.
+
+Lectura de accesorios en controladores de eventos
+
+function AlertButton({ message, children }) {
+  return (
+    <button onClick={() => alert(message)}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div>
+      <AlertButton message="Playing!">
+        Play Movie
+      </AlertButton>
+      <AlertButton message="Uploading!">
+        Upload Image
+      </AlertButton>
+    </div>
+  );
+}
+
+..........................................................................................................
+Pasar controladores de eventos como accesorios
+
+function Button({ onClick, children }) {
+  return (
+    <button onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function PlayButton({ movieName }) {
+  function handlePlayClick() {
+    alert(`Playing ${movieName}!`);
+  }
+
+  return (
+    <Button onClick={handlePlayClick}>
+      Play "{movieName}"
+    </Button>
+  );
+}
+
+
+export default function Toolbar() {
+  return (
+    <div>
+      <PlayButton movieName="Kiki's Delivery Service" />
+    </div>
+  );
+}
+
+..........................................................................................................
+Deteniendo la propagación
+function Button({ onClick, children }) {
+  return (
+    <button onClick={e => {
+      e.stopPropagation();
+      onClick();
+    }}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div className="Toolbar" onClick={() => {
+      alert('You clicked on the toolbar!');
+    }}>
+      <Button onClick={() => alert('Playing!')}>
+        Play Movie
+      </Button>
+      <Button onClick={() => alert('Uploading!')}>
+        Upload Image
+      </Button>
+    </div>
+  );
+}
+
+..........................................................................................................Prevención del comportamiento predeterminado
+
+export default function Signup() {
+  return (
+    <form onSubmit={e => {
+      e.preventDefault();
+      alert('Submitting!');
+    }}>
+      <input />
+      <button>Send</button>
+    </form>
+  );
+}
+..........................................................................................................
+Estado: la memoria de un componente
+
+Para actualizar un componente con nuevos datos, deben suceder dos cosas:
+
+1)Conservar los datos entre renderizaciones.
+2)Active React para renderizar el componente con nuevos datos (re-renderizado).
+El useStateHook proporciona esas dos cosas:
+
+1)Una variable de estado para retener los datos entre renderizaciones.
+2)Una función de establecimiento de estado para actualizar la variable y activar React para renderizar el componente nuevamente.
+import { useState } from 'react';
+import { sculptureList } from './data.js';
+
+export default function Gallery() {
+  const [index, setIndex] = useState(0);
+
+  function handleClick() {
+    setIndex(index + 1);
+  }
+
+  let sculpture = sculptureList[index];
+  return (
+    <>
+      <button onClick={handleClick}>
+        Next
+      </button>
+      <h2>
+        <i>{sculpture.name} </i> 
+        by {sculpture.artist}
+      </h2>
+      <h3>  
+        ({index + 1} of {sculptureList.length})
+      </h3>
+      <img 
+        src={sculpture.url} 
+        alt={sculpture.alt}
+      />
+      <p>
+        {sculpture.description}
+      </p>
+    </>
+  );
+}
+Dar un componente de múltiples variables de estado
+
+import { useState } from 'react';
+import { sculptureList } from './data.js';
+
+export default function Gallery() {
+  const [index, setIndex] = useState(0);
+  const [showMore, setShowMore] = useState(false);
+
+  function handleNextClick() {
+    setIndex(index + 1);
+  }
+
+  function handleMoreClick() {
+    setShowMore(!showMore);
+  }
+
+  let sculpture = sculptureList[index];
+  return (
+    <>
+      <button onClick={handleNextClick}>
+        Next
+      </button>
+      <h2>
+        <i>{sculpture.name} </i> 
+        by {sculpture.artist}
+      </h2>
+      <h3>  
+        ({index + 1} of {sculptureList.length})
+      </h3>
+      <button onClick={handleMoreClick}>
+        {showMore ? 'Hide' : 'Show'} details
+      </button>
+      {showMore && <p>{sculpture.description}</p>}
+      <img 
+        src={sculpture.url} 
+        alt={sculpture.alt}
+      />
+    </>
+  );
+}
+
+El estado es aislado y privado.
+El estado es local para una instancia de componente en la pantalla. En otras palabras, si renderiza el mismo componente dos veces, ¡cada copia tendrá un estado completamente aislado! Cambiar uno de ellos no afectará al otro.
+
+..........................................................................................................
+
+Renderizar y confirmar
+
+Antes de que sus componentes se muestren en la pantalla, deben ser renderizados por React. Comprender los pasos de este proceso lo ayudará a pensar en cómo se ejecuta su código y explicar su comportamiento.
+
+Imagine que sus componentes son cocineros en la cocina, ensamblando sabrosos platos a partir de ingredientes. En este escenario, React es el camarero que presenta las solicitudes de los clientes y les trae sus pedidos. Este proceso de solicitud y servicio de UI consta de tres pasos:
+
+1)Activar un render (entregar el pedido del cliente a la cocina)===>
+
+      Hay dos razones para que un componente se renderice:
+
+      Es el renderizado inicial del componente .
+      Se ha actualizado el estado del componente (o uno de sus ancestros) .
+
+Renderización del componente (preparación del pedido en cocina)=====>
+
+      Después de activar un renderizado, React llama a sus componentes para averiguar qué mostrar en la          pantalla. "Renderizado" es React llamando a sus componentes.
+
+      En el renderizado inicial, React llamará al componente raíz.
+      Para renderizaciones posteriores, React llamará al componente de función cuya actualización de       estado activó la renderización.
+
+Comprometerse con el DOM (colocar el pedido sobre la mesa) ===========>
+
+      Después de renderizar (llamar) a sus componentes, React modificará el DOM.
+
+      Para el renderizado inicial, React utilizará la appendChild()API DOM para poner en pantalla todos       los nodos DOM que ha creado.
+      Para volver a renderizar, React aplicará las operaciones mínimas necesarias (¡calculadas durante el       renderizado!) para hacer que el DOM coincida con la salida de renderizado más reciente
+
+..........................................................................................................
+
+Estado como una instantánea
+
+Las variables de estado pueden parecerse a variables de JavaScript regulares que puede leer y escribir. Sin embargo, el estado se comporta más como una instantánea. Configurarlo no cambia la variable de estado que ya tiene, sino que activa una nueva representación.
+
+Cuando React vuelve a renderizar un componente:
+
+React vuelve a llamar a tu función.
+Su función devuelve una nueva instantánea JSX.
+React luego actualiza la pantalla para que coincida con la instantánea que ha devuelto
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        setNumber(number + 5);
+        setTimeout(() => {
+          alert(number);
+        }, 3000);
+      }}>+5</button>
+    </>
+  )
+}
+
+El valor de una variable de estado nunca cambia dentro de una representación, incluso si el código del controlador de eventos es asíncrono. 
+
+.........................................................................................................
+Poner en cola una serie de actualizaciones de estado
+
+Establecer una variable de estado pondrá en cola otro renderizado. Pero a veces es posible que desee realizar varias operaciones en el valor antes de poner en cola el siguiente renderizado. Para hacer esto, es útil comprender cómo los lotes de React actualizan el estado.
+
+Esto le permite actualizar múltiples variables de estado, incluso desde múltiples componentes, sin activar demasiados renderizados. Pero esto también significa que la interfaz de usuario no se actualizará hasta que se complete el controlador de eventos y cualquier código que contenga . Este comportamiento, también conocido como procesamiento por lotes, hace que su aplicación React se ejecute mucho más rápido. También evita lidiar con confusos renderizados "a medio terminar" donde solo se han actualizado algunas de las variables.
+
+React no procesa por lotes múltiples eventos intencionales como clics : cada clic se maneja por separado. Tenga la seguridad de que React solo realiza lotes cuando generalmente es seguro hacerlo. Esto garantiza que, por ejemplo, si el primer clic en el botón desactiva un formulario, el segundo clic no lo volverá a enviar.
+
+Actualizar la misma variable de estado varias veces antes del próximo renderizado
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        setNumber(n => n + 1);
+        setNumber(n => n + 1);
+        setNumber(n => n + 1);
+      }}>+3</button>
+    </>
+  )
+}
+quí, n => n + 1se llama una función de actualización. Cuando se lo pasas a un setter de estado:
+
+React pone en cola esta función para que se procese después de que se haya ejecutado todo el otro código en el controlador de eventos.
+Durante el próximo renderizado, React pasa por la cola y le brinda el estado actualizado final.
+
+..........................................................................................................
+
+Actualización de objetos en estado
+
+El estado puede contener cualquier tipo de valor de JavaScript, incluidos los objetos. Pero no debe cambiar los objetos que tiene en el estado Reaccionar directamente. En cambio, cuando desea actualizar un objeto, debe crear uno nuevo (o hacer una copia de uno existente) y luego establecer el estado para usar esa copia.
+
+Copiar objetos con la sintaxis extendida
+En el ejemplo anterior, el positionobjeto siempre se crea nuevo desde la posición actual del cursor. Pero a menudo querrá incluir datos existentes como parte del nuevo objeto que está creando. Por ejemplo, es posible que desee actualizar solo un campo en un formulario, pero mantener los valores anteriores para todos los demás campos.
+
+
+ Copiar objetos con la sintaxis extendida  --Actualización de un objeto anidado
+
+import { useState } from 'react';
+
+export default function Form() {
+  const [person, setPerson] = useState({
+    name: 'Niki de Saint Phalle',
+    artwork: {
+      title: 'Blue Nana',
+      city: 'Hamburg',
+      image: 'https://i.imgur.com/Sd1AgUOm.jpg',
+    }
+  });
+
+  function handleNameChange(e) {
+    setPerson({
+      ...person,
+      name: e.target.value
+    });
+  }
+
+  function handleTitleChange(e) {
+    setPerson({
+      ...person,
+      artwork: {
+        ...person.artwork,
+        title: e.target.value
+      }
+    });
+  }
+
+  function handleCityChange(e) {
+    setPerson({
+      ...person,
+      artwork: {
+        ...person.artwork,
+        city: e.target.value
+      }
+    });
+  }
+
+  function handleImageChange(e) {
+    setPerson({
+      ...person,
+      artwork: {
+        ...person.artwork,
+        image: e.target.value
+      }
+    });
+  }
+
+  return (
+    <>
+      <label>
+        Name:
+        <input
+          value={person.name}
+          onChange={handleNameChange}
+        />
+      </label>
+      <label>
+        Title:
+        <input
+          value={person.artwork.title}
+          onChange={handleTitleChange}
+        />
+      </label>
+      <label>
+        City:
+        <input
+          value={person.artwork.city}
+          onChange={handleCityChange}
+        />
+      </label>
+      <label>
+        Image:
+        <input
+          value={person.artwork.image}
+          onChange={handleImageChange}
+        />
+      </label>
+      <p>
+        <i>{person.artwork.title}</i>
+        {' by '}
+        {person.name}
+        <br />
+        (located in {person.artwork.city})
+      </p>
+      <img 
+        src={person.artwork.image} 
+        alt={person.artwork.title}
+      />
+    </>
+  );
+}
+
+Escriba una lógica de actualización concisa con Immer
+Si su estado está profundamente anidado, es posible que desee considerar aplanarlo. Pero, si no desea cambiar la estructura de su estado, es posible que prefiera un acceso directo a los diferenciales anidados. Immer es una biblioteca popular que le permite escribir usando la sintaxis conveniente pero cambiante y se encarga de producir las copias por usted. Con Immer, el código que escribe parece que está "rompiendo las reglas" y mutando un objeto:
+..........................................................................................................
+Actualización de arreglos en estado
+
+Las matrices son mutables en JavaScript, pero debe tratarlas como inmutables cuando las almacena en el estado. Al igual que con los objetos, cuando desea actualizar una matriz almacenada en el estado, debe crear una nueva (o hacer una copia de una existente) y luego establecer el estado para usar la nueva matriz.
+Actualización de arreglos sin mutación
+
+
+
+               evitar (muta la matriz)	             preferir (devuelve una nueva matriz)
+          ------------------------------------------------------------------------------------
+
+agregando	push,unshift	                     concat, [...arr]sintaxis extendida ( ejemplo )
+
+quitando	pop, shift,splice	             filter, slice( ejemplo )
+
+reemplazando	splice, arr[i] = ...tarea	     map( ejemplo )
+
+clasificación	reverse,sort	                     copia la matriz primero ( ejemplo )
+
+
+1)Agragando una matriz
+
+
+import { useState } from 'react';
+
+let nextId = 0;
+export default function List() {
+  const [name, setName] = useState('');
+  const [artists, setArtists] = useState([]);
+
+  return (
+    <>
+      <h1>Inspiring sculptors:</h1>
+      <input
+        value={name}
+        onChange={e => setName(e.target.value)}
+      />
+      <button onClick={() => {
+        setName('');
+        setArtists([
+          ...artists,
+          { id: nextId++, name: name }
+        ]);
+      }}>Add</button>
+      <ul>
+        {artists.map(artist => (
+          <li key={artist.id}>{artist.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+2)Eliminar de una matriz
+La forma más sencilla de eliminar un elemento de una matriz es filtrarlo . En otras palabras, producirá una nueva matriz que no contendrá ese elemento. Para hacer esto, use el filtermétodo, por ejemplo:
+
+import { useState } from 'react';
+
+let initialArtists = [
+  { id: 0, name: 'Marta Colvin Andrade' },
+  { id: 1, name: 'Lamidi Olonade Fakeye'},
+  { id: 2, name: 'Louise Nevelson'},
+];
+
+export default function List() {
+  const [artists, setArtists] = useState(
+    initialArtists
+  );
+
+  return (
+    <>
+      <h1>Inspiring sculptors:</h1>
+      <ul>
+        {artists.map(artist => (
+          <li key={artist.id}>
+            {artist.name}{' '}
+            <button onClick={() => {
+              setArtists(
+                artists.filter(a =>
+                  a.id !== artist.id
+                )
+              );
+            }}>
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+3)Transformar una matriz
+Si desea cambiar algunos o todos los elementos de la matriz, puede usar map()para crear una nueva matriz. La función a la que pasarásmap puede decidir qué hacer con cada elemento, según sus datos o su índice (o ambos).
+import { useState } from 'react';
+
+let initialCounters = [
+  0, 0, 0
+];
+
+export default function CounterList() {
+  const [counters, setCounters] = useState(
+    initialCounters
+  );
+
+  function handleIncrementClick(index) {
+    const nextCounters = counters.map((c, i) => {
+      if (i === index) {
+        // Increment the clicked counter
+        return c + 1;
+      } else {
+        // The rest haven't changed
+        return c;
+      }
+    });
+    setCounters(nextCounters);
+  }
+
+  return (
+    <ul>
+      {counters.map((counter, i) => (
+        <li key={i}>
+          {counter}
+          <button onClick={() => {
+            handleIncrementClick(i);
+          }}>+1</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+Insertar en una matriz
+A veces, es posible que desee insertar un elemento en una posición particular que no esté ni al principio ni al final. Para hacer esto, puede usar la ...sintaxis de distribución de matriz junto con el slice()método. El slice()método le permite cortar una "rebanada" de la matriz. Para insertar un elemento, creará una matriz que extienda el segmento antes del punto de inserción, luego el nuevo elemento y luego el resto de la matriz original.
+
+En este ejemplo, el botón Insertar siempre inserta en el índice 1:
+
+Hacer otros cambios en una matriz
+Hay algunas cosas que no puede hacer con la sintaxis extendida y los métodos que no mutan como map()y filter()solo. Por ejemplo, es posible que desee invertir u ordenar una matriz. El JavaScript reverse()ysort() los métodos están mutando la matriz original, por lo que no puede usarlos directamente.
+
+Sin embargo, primero puede copiar la matriz y luego realizar cambios en ella.
+
+
